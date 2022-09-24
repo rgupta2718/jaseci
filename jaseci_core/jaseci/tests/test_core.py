@@ -23,7 +23,7 @@ class ArchitypeTests(TestCaseHelper, TestCase):
         mast = self.meta.master()
         num_objs = len(mast._h.mem.keys())
         node1 = Node(m_id=mast._m_id, h=mast._h)
-        node2 = Node(m_id=mast._m_id, h=mast._h, parent_id=node1.id)
+        node2 = Node(m_id=mast._m_id, h=mast._h, parent=node1)
         num_new = len(mast._h.mem.keys())
         self.assertEqual(num_new, num_objs + 2)
 
@@ -76,9 +76,10 @@ class ArchitypeTests(TestCaseHelper, TestCase):
         Test saving object to json and back to python dict
         """
         for i in get_all_subclasses(Element):
-            orig = i(m_id="anon", h=self.meta.hook())
+            kwargs = {"m_id": "anon", "h": self.meta.hook()}
+            orig = i(**kwargs)
             blob1 = orig.json(detailed=True)
-            new = i(m_id="anon", h=self.meta.hook())
+            new = i(**kwargs)
             self.assertNotEqual(orig.id, new.id)
             new.json_load(blob1)
             self.assertEqual(orig.id, new.id)

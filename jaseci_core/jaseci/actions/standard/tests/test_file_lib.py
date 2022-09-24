@@ -6,7 +6,7 @@ class FileLibTest(CoreTest):
     fixture_src = __file__
 
     def test_json_dump(self):
-        self.call(
+        ret = self.call(
             self.mast,
             ["sentinel_register", {"code": self.load_jac("file_stuff.jac")}],
         )

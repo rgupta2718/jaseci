@@ -11,7 +11,6 @@ from jaseci.element.element import Element
 from jaseci.element.obj_mixins import Anchored
 from jaseci.utils.id_list import IdList
 from jaseci.jac.interpreter.walker_interp import WalkerInterp
-from jaseci.jac.ir.jac_code import JacCode
 import uuid
 import hashlib
 import io
@@ -19,16 +18,15 @@ import pstats
 import cProfile
 
 
-class Walker(Element, JacCode, WalkerInterp, Anchored):
+class Walker(Element, WalkerInterp, Anchored):
     """Walker class for Jaseci"""
 
     valid_async = [True, "true"]
 
-    def __init__(self, code_ir=None, *args, **kwargs):
+    def __init__(self, code_ir=None, **kwargs):
         self.yielded = False
         self.activity_action_ids = IdList(self)
         self.namespaces = []
-        self.context = {}
         self.profile = {}
         # Process state
         self.current_node_id = None
@@ -39,10 +37,9 @@ class Walker(Element, JacCode, WalkerInterp, Anchored):
         self.in_entry_exit = False
         self.step_limit = 10000
         self._async = False
-        Anchored.__init__(self)
-        Element.__init__(self, *args, **kwargs)
-        JacCode.__init__(self, code_ir=code_ir)
+        Element.__init__(self, **kwargs)
         WalkerInterp.__init__(self)
+        Anchored.__init__(self)
 
     @property
     def current_node(self):
@@ -86,7 +83,7 @@ class Walker(Element, JacCode, WalkerInterp, Anchored):
             return False
 
         self.current_node = self.next_node_ids.pop_first_obj()
-        self.run_walker(jac_ast=self._jac_ast)
+        self.run_walker(jac_ast=self.get_architype()._jac_ast)
         if self.current_step < 200:
             self.log_history("visited", self.current_node.id)
         self.current_step += 1

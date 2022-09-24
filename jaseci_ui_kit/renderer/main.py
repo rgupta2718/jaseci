@@ -1,12 +1,8 @@
-from fastapi import FastAPI
-from fastapi import Request
+from fastapi import FastAPI, Request
+import json
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from jaseci.actions.live_actions import jaseci_action
-
-templates = Jinja2Templates(directory="templates")
-app = FastAPI(title="Jaseci UIKit Renderer", version="1.0")
-app.mount("/static", StaticFiles(directory="static"), name="static")
+from jaseci.actions.live_actions import jaseci_action, jaseci_expose
 
 loaded_json = {}
 
@@ -16,12 +12,15 @@ def load_json(route: dict):
     """Loads JSON data for a given route."""
     global loaded_json
 
-    loaded_json[route["route_name"]] = route["content"]
+    loaded_json[route["route_name"]] = json.dumps(route["content"])
     return {}
 
 
-@app.get("/site/{route}")
-async def site(request: Request, route: str):
+@jaseci_expose(
+    "/site/{route}", mount=["/static", StaticFiles(directory="static"), "static"]
+)
+def site(request: Request, route: str):
+    templates = Jinja2Templates(directory="templates")
     return templates.TemplateResponse(
         "site/index.html", {"request": request, "json": loaded_json[route]}
     )
